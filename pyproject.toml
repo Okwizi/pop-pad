@@ -1,0 +1,20 @@
+# Tooling configuration only: pop-pad itself is a C++ DLL, not a Python package.
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["assets/vendor", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PL"]
+ignore = ["PLR2004"]  # magic numbers are the point of a file-format test
+
+[tool.ruff.lint.isort]
+known-first-party = ["build_glyphs"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR0913"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
