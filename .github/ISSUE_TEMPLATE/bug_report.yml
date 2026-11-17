@@ -1,0 +1,56 @@
+name: Bug report
+description: Something does not work with pop-pad installed
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read the Troubleshooting section of the README first; the common cases are there.
+        pop-pad writes `poppad.log` into the game folder on every start. It is the most useful thing you can attach.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: steam-input
+    attributes:
+      label: Steam Input for the game
+      description: Right-click the game in Steam, Properties, Controller.
+      options:
+        - Disabled
+        - Enabled
+        - Use default settings
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: controller
+    attributes:
+      label: Controller and how it is connected
+      placeholder: "Xbox Series pad over USB, DualSense over Bluetooth through Steam, 8BitDo on its 2.4 GHz dongle..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: pop-pad version
+      description: The release you downloaded, or the commit if you built it.
+    validations:
+      required: true
+  - type: input
+    id: resolution
+    attributes:
+      label: Game resolution and display mode
+      placeholder: "1920x1080, fullscreen"
+  - type: textarea
+    id: log
+    attributes:
+      label: poppad.log
+      description: Paste it, or drag the file in. Remove anything you do not want to share (it lists your game folder path).
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else

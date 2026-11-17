@@ -1,0 +1,36 @@
+name: Branch flow
+
+# Work reaches master only by way of develop, and develop only takes feature branches.
+# Branch protection cannot express "from which branch", so this check does, and the rulesets
+# on develop and master require it.
+on:
+  pull_request:
+    branches: [develop, master]
+    types: [opened, reopened, synchronize, edited]
+
+permissions: {}
+
+jobs:
+  check:
+    name: Branch flow
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check where the pull request comes from
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          FROM_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          fail() { echo "::error::$*"; exit 1; }
+          case "$BASE" in
+            master)
+              [ "$FROM_FORK" = "false" ] || fail "master only takes develop from this repository, not a fork."
+              [ "$HEAD" = "develop" ] || fail "master only takes develop; this pull request comes from '$HEAD'. Open it against develop instead."
+              ;;
+            develop)
+              case "$HEAD" in
+                master | develop) fail "develop only takes feature branches; this pull request comes from '$HEAD'. Use a branch such as feature/<what> or fix/<what>." ;;
+              esac
+              ;;
+          esac
+          echo "'$HEAD' into '$BASE' follows the branch flow."
