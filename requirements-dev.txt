@@ -1,0 +1,7 @@
+# Everything tools/check.sh and CI need on the Python side. The formatters are pinned exactly:
+# their output changes between releases, and a different version would reformat the tree.
+clang-format==23.1.5
+ruff==0.17.5
+pytest>=8
+numpy>=1.26
+pillow>=10

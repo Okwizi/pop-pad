@@ -1,0 +1,20 @@
+# Matches the style the code was written in. clang-format 23 (pinned in requirements-dev.txt).
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 140
+PointerAlignment: Left
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Empty
+IndentCaseLabels: true
+SortIncludes: Never
+AlignConsecutiveAssignments: None
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+BreakBeforeBraces: Attach
+ReflowComments: false
+InsertBraces: false
