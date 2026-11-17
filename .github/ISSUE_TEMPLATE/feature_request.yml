@@ -1,0 +1,14 @@
+name: Feature request
+description: An idea, a controller whose icons are missing, or another game in the series
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like pop-pad to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What is the problem it solves for you?
