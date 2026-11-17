@@ -1,0 +1,7 @@
+LIBRARY dinput8
+EXPORTS
+    DirectInput8Create = PP_DirectInput8Create@20
+    DllCanUnloadNow = PP_DllCanUnloadNow@0 PRIVATE
+    DllGetClassObject = PP_DllGetClassObject@12 PRIVATE
+    DllRegisterServer = PP_DllRegisterServer@0 PRIVATE
+    DllUnregisterServer = PP_DllUnregisterServer@0 PRIVATE

@@ -1,0 +1,11 @@
+build/
+shots/
+tools/dev/local.env
+*.job
+backups/
+assets/vendor/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
