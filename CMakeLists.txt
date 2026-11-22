@@ -20,7 +20,9 @@ add_library(poppad SHARED
     src/font_file.cpp
     src/font_patch.cpp
     src/glyphs.cpp
+    src/hid_scan.cpp
     src/icons.cpp
+    src/pad_style.cpp
     src/brackets.cpp
     src/dinput8.def
 )
@@ -33,4 +35,4 @@ if(POPPAD_WERROR)
     target_compile_options(poppad PRIVATE -Werror)
 endif()
 target_link_options(poppad PRIVATE -static -static-libgcc -static-libstdc++ -Wl,--enable-stdcall-fixup)
-target_link_libraries(poppad PRIVATE user32 kernel32 advapi32)
+target_link_libraries(poppad PRIVATE user32 kernel32 advapi32 setupapi hid)

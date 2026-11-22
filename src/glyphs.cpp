@@ -11,6 +11,7 @@
 #include "common.h"
 #include "font_file.h"
 #include "icons.h"
+#include "pad_style.h"
 #include <d3d9.h>
 #include <cstdio>
 #include <cstring>
@@ -38,36 +39,9 @@ static int g_live_count;
 
 static BYTE* g_atlas; // ATLAS_WIDTH x ATLAS_HEIGHT BGRA, top row first
 
-static const char* detect_style() {
-    UINT count = 0;
-    if (GetRawInputDeviceList(nullptr, &count, sizeof(RAWINPUTDEVICELIST)) != 0 || count == 0) return "xbox";
-    RAWINPUTDEVICELIST* list = (RAWINPUTDEVICELIST*)HeapAlloc(GetProcessHeap(), 0, count * sizeof(RAWINPUTDEVICELIST));
-    if (!list) return "xbox";
-    bool playstation = false, nintendo = false, xbox = false, other = false;
-    UINT got = GetRawInputDeviceList(list, &count, sizeof(RAWINPUTDEVICELIST));
-    for (UINT i = 0; got != (UINT)-1 && i < got; i++) {
-        if (list[i].dwType != RIM_TYPEHID) continue;
-        RID_DEVICE_INFO info;
-        info.cbSize = sizeof info;
-        UINT size = sizeof info;
-        if ((int)GetRawInputDeviceInfoA(list[i].hDevice, RIDI_DEVICEINFO, &info, &size) <= 0) continue;
-        if (info.hid.usUsagePage != 1 || (info.hid.usUsage != 4 && info.hid.usUsage != 5)) continue;
-        logf("controller present: %04lX:%04lX", info.hid.dwVendorId, info.hid.dwProductId);
-        switch (info.hid.dwVendorId) {
-            case 0x054C: playstation = true; break;
-            case 0x057E: nintendo = true; break;
-            case 0x045E: xbox = true; break;
-            default: other = true; break;
-        }
-    }
-    HeapFree(GetProcessHeap(), 0, list);
-    // Steam Input adds a virtual Xbox pad beside the real controller, so the real one decides.
-    if (playstation) return "playstation";
-    if (nintendo) return "switch";
-    if (other) return "generic";
-    (void)xbox;
-    return "xbox";
-}
+// The game's own device list is no use here: under Steam Input it holds only Steam's virtual Xbox
+// pad, and Raw Input shows no pad at all, so the real controller is looked up in the system's list.
+static const char* detect_style() { return pad_style_for(pad_scan()); }
 
 bool glyphs_init() {
     char style[32], ini[MAX_PATH], path[MAX_PATH];
