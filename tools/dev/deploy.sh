@@ -4,6 +4,7 @@
 # Usage: deploy.sh user    the shipped poppad.ini, as a player would have it
 #        deploy.sh dev     plus the command channel and screenshots (real pad)
 #        deploy.sh devpad  plus the scripted virtual pad
+# PROBE=1 also logs every change in what XInputGetState returns (see src/xi_hook.cpp).
 # shellcheck source=tools/dev/common.sh
 source "$(dirname "$0")/common.sh"
 MODE=${1:-user}
@@ -19,8 +20,8 @@ sed 's/$/\r/' "$ROOT/poppad.ini" > "$ini"
 [ -z "${STYLE:-}" ] || sed -i "s/^Style=.*/Style=$STYLE\r/" "$ini"
 case $MODE in
   user) ;;
-  dev) printf '\r\n[Dev]\r\nVirtualPad=0\r\nCommands=1\r\n' >> "$ini" ;;
-  devpad) printf '\r\n[Dev]\r\nVirtualPad=1\r\nCommands=1\r\nIconTest=%s\r\n' "${ICON_TEST:-0}" >> "$ini" ;;
+  dev) printf '\r\n[Dev]\r\nVirtualPad=0\r\nCommands=1\r\nProbe=%s\r\n' "${PROBE:-0}" >> "$ini" ;;
+  devpad) printf '\r\n[Dev]\r\nVirtualPad=1\r\nCommands=1\r\nProbe=%s\r\nIconTest=%s\r\n' "${PROBE:-0}" "${ICON_TEST:-0}" >> "$ini" ;;
   *) echo "unknown mode $MODE" >&2; exit 2 ;;
 esac
 pc "if not exist $PC_LINK\\poppad\\glyphs mkdir $PC_LINK\\poppad\\glyphs" >/dev/null

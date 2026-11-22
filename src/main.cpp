@@ -93,6 +93,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID) {
     g_cfg.glyphs = GetPrivateProfileIntA("Glyphs", "Enabled", 1, ini) != 0;
     g_cfg.dev_virtual_pad = GetPrivateProfileIntA("Dev", "VirtualPad", 0, ini) != 0;
     g_cfg.dev_commands = GetPrivateProfileIntA("Dev", "Commands", 0, ini) != 0;
+    g_cfg.dev_probe = GetPrivateProfileIntA("Dev", "Probe", 0, ini) != 0;
     char icon_test[16];
     GetPrivateProfileStringA("Dev", "IconTest", "0", icon_test, sizeof icon_test, ini);
     g_cfg.dev_icon_test = (int)strtoul(icon_test, nullptr, 16) & 0xFF;

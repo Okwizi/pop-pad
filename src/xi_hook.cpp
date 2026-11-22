@@ -60,6 +60,31 @@ static void adjust(XINPUT_GAMEPAD& pad) {
     pad.sThumbRY = stretch(pad.sThumbRY);
 }
 
+// Why the game sees no input under Steam Input: log each change in what the pad reports, and
+// every few seconds how often the game polls and which slots hold a pad.
+static void probe_state(DWORD asked, DWORD result, const XINPUT_STATE* state) {
+    static DWORD calls, last_result = 0xFFFFFFFF, last_packet, next_report, changes, reports;
+    calls++;
+    bool changed = result != last_result || (result == ERROR_SUCCESS && state->dwPacketNumber != last_packet);
+    if (changed && changes < 300) {
+        changes++;
+        const XINPUT_GAMEPAD& g = state->Gamepad;
+        logf("probe: asked=%lu slot=%lu result=%lu packet=%lu buttons=%04X lt=%u rt=%u lx=%d ly=%d", asked, g_slot, result,
+             state->dwPacketNumber, g.wButtons, g.bLeftTrigger, g.bRightTrigger, g.sThumbLX, g.sThumbLY);
+    }
+    last_result = result;
+    if (result == ERROR_SUCCESS) last_packet = state->dwPacketNumber;
+    DWORD now = GetTickCount();
+    if ((LONG)(now - next_report) < 0 || reports >= 120) return;
+    next_report = now + 5000;
+    reports++;
+    DWORD connected = 0;
+    XINPUT_STATE other;
+    for (DWORD slot = 0; slot < XUSER_MAX_COUNT; slot++)
+        if (r_get_state(slot, &other) == ERROR_SUCCESS) connected |= 1u << slot;
+    logf("probe: %lu polls so far, last result %lu, connected slots mask %lX", calls, last_result, connected);
+}
+
 static DWORD WINAPI my_get_state(DWORD index, XINPUT_STATE* state) {
     static LONG calls;
     LONG n = InterlockedIncrement(&calls);
@@ -72,6 +97,7 @@ static DWORD WINAPI my_get_state(DWORD index, XINPUT_STATE* state) {
     DWORD result = r_get_state ? r_get_state(live_slot(index), state) : ERROR_DEVICE_NOT_CONNECTED;
     if (result == ERROR_SUCCESS) adjust(state->Gamepad);
     if (n <= 3) logf("XInputGetState(%lu) -> %lu", index, result);
+    if (g_cfg.dev_probe && r_get_state) probe_state(index, result, state);
     return result;
 }
 

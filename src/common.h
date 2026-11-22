@@ -18,6 +18,8 @@ struct Config {
     // Development only: a scripted pad and a command file, so the game can be driven remotely.
     bool dev_virtual_pad;
     bool dev_commands;
+    // Log every change in what XInputGetState returns, and which slots are connected.
+    bool dev_probe;
     int dev_icon_test;
 };
 
