@@ -52,6 +52,16 @@ docs: explain the custom icon format
 
 Types in use: `feat`, `fix`, `docs`, `test`, `refactor`, `build`, `ci`, `chore`.
 
+## Working with an AI coding agent
+
+[CLAUDE.md](CLAUDE.md) briefs an agent on the commands, the rules above, and how to test against the
+real game without harming someone's install. It applies to any agent, not only Claude Code.
+
+The repository is public. Your machine's host names, addresses, user names and paths go in files git
+ignores (`tools/dev/local.env`, `CLAUDE.local.md`, `.claude/settings.local.json`), never in a tracked
+file, a commit message, an issue or a pull request. A test fails if a tracked file contains a home
+directory path or a private network address.
+
 ## What not to contribute
 
 Game files, dumps, extracted assets, or anything else copyrighted by others. The tests build their
