@@ -77,7 +77,7 @@ one-ID limit.
 | Icons without the game's `[ ]` around them | Works | Only on the exact game build listed under [Requirements](#requirements) |
 | Switch and generic icon sets | Built, not yet seen on screen | See [Button icons](#button-icons) |
 | Controller switched on after the game has started | Should work, untested | The game's XInput code copes with an empty slot |
-| **Steam Input switched on for the game** | **Not working yet** | No input reaches the game. See [Work in progress](#work-in-progress) |
+| Steam Input switched on for the game | Works in the tests so far | One pad (8BitDo Ultimate 2C on its dongle) with Steam's Gamepad layout: D-pad, buttons, START, BACK and sticks arrive. An earlier test with it on delivered nothing and the cause was not found. See [Work in progress](#work-in-progress) |
 | Your own icon artwork | Possible by hand, no tooling yet | See [Work in progress](#work-in-progress) |
 | Sands of Time, Warrior Within | Not started | See [Work in progress](#work-in-progress) |
 
@@ -86,7 +86,8 @@ one-ID limit.
 - Windows, with the Steam release of *Prince of Persia: The Two Thrones* (Steam app 13530).
 - An XInput controller: an Xbox pad, or any controller that appears as one (Steam Input's virtual
   pad, 8BitDo and similar in X-input mode).
-- Steam Input **switched off** for this game for now (see [Install](#install)).
+- Steam Input on or off. With it on, the controller layout Steam applies to the game must be a
+  gamepad one, such as Steam's Gamepad template: a keyboard-and-mouse layout sends no controller input.
 
 **Tested game build.** The icon brackets are removed by patching two routines inside
 `POP3.EXE`, which only works on the build it was written against:
@@ -108,8 +109,8 @@ and use the folder that `tools/package.sh` makes. Once releases exist, they are 
 1. In Steam, right-click the game, **Manage**, **Browse local files**.
 2. Extract the zip there so that `dinput8.dll` sits next to `POP3.EXE`. You get `dinput8.dll`,
    `poppad.ini` and a `poppad` folder (the button icons).
-3. In Steam, right-click the game, **Properties**, **Controller**, and set
-   **Disable Steam Input**. This is needed until Steam Input support is fixed.
+3. Steam Input can stay on or off. If it is on, check that the controller layout Steam applies to
+   the game is a gamepad one (right-click the game, **Properties**, **Controller**).
 4. Connect your controller and start the game from Steam as usual. The game opens its own
    configuration window first, as it always does.
 
@@ -171,10 +172,13 @@ With `Style=auto`, the set follows the controller that is connected:
 |---|---|
 | Sony | `playstation` |
 | Nintendo | `switch` |
-| Another maker, not Microsoft | `generic`: Xbox letter positions without Xbox colours |
+| Another maker (8BitDo, for example), not Microsoft | `generic`: Xbox letter positions without Xbox colours |
 | Microsoft, or nothing found | `xbox` |
 
-Steam Input adds a virtual Xbox pad next to the real controller, so the real one decides.
+The controller is looked up in Windows' own device list (HID gamepads and XInput pads), not through
+the game, because with Steam Input on the game is shown only Steam's virtual Xbox pad. That virtual
+pad, made by Valve, is ignored. With several controllers plugged in, PlayStation wins over Switch,
+Switch over other makers, and those over Xbox. To choose a set yourself, set `Style`.
 
 Icons are drawn at one and a half times the height of a capital letter. Keyboard names keep their
 `[ ]`. Only the names of pad inputs are replaced.
@@ -197,9 +201,10 @@ easier tooling is [planned](#work-in-progress).
 
 ## Troubleshooting
 
-**The controller does nothing.** Check that Steam Input is disabled for the game (see
-[Install](#install)), and that `poppad.log` exists in the game folder after a start. If the log
-is missing, `dinput8.dll` is not next to `POP3.EXE` (or `Log` is set to `0`).
+**The controller does nothing.** With Steam Input on, check the layout Steam applies to the game: a
+keyboard-and-mouse layout sends no controller input, and switching Steam Input off for the game is a
+quick way to rule it out. Also check that `poppad.log` exists in the game folder after a start. If
+the log is missing, `dinput8.dll` is not next to `POP3.EXE` (or `Log` is set to `0`).
 
 **"Use safe mode settings?" appears when the game starts.** The game leaves a marker file when it
 is closed in an unclean way (a crash, or a killed process). Answer **No**, or delete the file
@@ -218,8 +223,9 @@ below.
 
 **Known issues**
 
-- **Steam Input on:** no input reaches the game; see below.
-- **Steam overlay:** Shift+Tab does not open it in this game. The cause is not known.
+- **Steam overlay:** Shift+Tab does not open it in this game. Steam's overlay log shows that the
+  overlay's own window never connects to the game, so the cause looks to be on Steam's side. The
+  game's **Enable the Steam Overlay while in-game** setting has not been checked yet.
 - **Menus at 3840 x 2160** are shifted right and clipped; they are fine at 1920 x 1080 and
   1024 x 768. The cause has not been investigated yet (the game's own behaviour has not been ruled
   out). Use a lower resolution in the game's options.
@@ -337,14 +343,14 @@ prompt described under [Troubleshooting](#troubleshooting).
 ## Work in progress
 
 **Steam Input first.** The aim is for this to work the way Steam players expect: switch Steam Input
-on, pick any controller, and it works with the right icons. Today it does not: with Steam Input on
-for the game, no input reached it in the one test so far, while the same controller works with it
-off. The cause is not known. Things to check:
+on, pick any controller, and it works with the right icons. It does for the one controller tried
+(8BitDo Ultimate 2C on its dongle, Steam's Gamepad layout): the game's XInput calls report the
+buttons and sticks, and the icon set is chosen from the real controller. An earlier test with Steam
+Input on delivered nothing and the cause was never found, so Steam Input stays on during development
+in case it comes back. Still to check:
 
-- [ ] Which controller configuration Steam really applies to the game (per controller type or per
-      device), since one test showed a keyboard-and-mouse layout being assigned
-- [ ] Whether the game's very early lookup of `XInputGetState` happens before Steam installs its
-      own XInput hook
+- [ ] Why that earlier test failed; a keyboard-and-mouse layout would do it, but it was not proved
+- [ ] PlayStation and Switch pads through Steam Input, for input and for the icon choice
 - [ ] Why the Steam overlay does not open in this game
 - [ ] Controller hot-plug, with and without Steam Input
 - [ ] Linux, Proton and Steam Deck: untested; the DLL would need `WINEDLLOVERRIDES="dinput8=n,b"`
