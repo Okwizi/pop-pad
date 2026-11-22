@@ -4,8 +4,12 @@
 // maker has to come from the system's device list instead.
 #include "common.h"
 #include "pad_style.h"
+// Older MinGW-w64 headers, such as the CI runner's, do not declare the HID functions extern "C", so
+// the linker looks for C++ names that hid.dll does not have. hidsdi.h has to come before hidpi.h.
+extern "C" {
 #include <hidsdi.h>
 #include <hidpi.h>
+}
 #include <setupapi.h>
 
 // The interface Windows' Xbox 360 class driver exposes for every XInput pad, whatever its maker.
