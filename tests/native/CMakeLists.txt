@@ -11,7 +11,7 @@ option(POPPAD_SANITIZE "Build the tests with AddressSanitizer and UndefinedBehav
 option(POPPAD_WERROR "Treat compiler warnings as errors" OFF)
 
 # test_main.cpp includes font_patch.cpp itself, to reach the functions that file keeps private.
-add_executable(native_tests test_main.cpp ../../src/font_file.cpp ../../src/icons.cpp)
+add_executable(native_tests test_main.cpp ../../src/font_file.cpp ../../src/icons.cpp ../../src/pad_style.cpp)
 target_include_directories(native_tests BEFORE PRIVATE shim ../../src)
 target_compile_options(native_tests PRIVATE -Wall -Wextra -fno-exceptions -fno-rtti -g)
 # The paths are built with bounded snprintf calls; only the host compiler worries they could be cut.

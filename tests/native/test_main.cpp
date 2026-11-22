@@ -6,8 +6,10 @@
 #include "common.h"
 #include "font_file.h"
 #include "icons.h"
+#include "pad_style.h"
 
 #include <cstdlib>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -401,6 +403,54 @@ static void test_a_file_that_is_not_a_font_is_not_served() {
     CHECK(g_opened.empty());
 }
 
+static bool ids_of(const char* path, unsigned want_vendor, unsigned want_product) {
+    unsigned vendor = 0, product = 0;
+    return hid_path_ids(path, &vendor, &product) && vendor == want_vendor && product == want_product;
+}
+
+static void test_device_paths_give_their_vendor_and_product() {
+    CHECK(ids_of("\\\\?\\hid#vid_2dc8&pid_310a&mi_00#7&1a2b3c4d&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}", 0x2DC8, 0x310A));
+    CHECK(ids_of("\\\\?\\usb#VID_054C&PID_0CE6#5&2f3e4d&0&3#{ec87f1e3-c13b-4100-b5f7-8b84d54260cb}", 0x054C, 0x0CE6));
+    CHECK(ids_of("vid_045e&pid_028e", 0x045E, 0x028E));
+
+    unsigned vendor = 0, product = 0;
+    CHECK(!hid_path_ids("", &vendor, &product));
+    CHECK(!hid_path_ids("\\\\?\\root#system#0001#{guid}", &vendor, &product));
+    CHECK(!hid_path_ids("vid_2dc", &vendor, &product));
+    CHECK(!hid_path_ids("vid_2dcg&pid_310a", &vendor, &product));
+    CHECK(!hid_path_ids("vid_2dc8_pid_310a", &vendor, &product));
+    CHECK(!hid_path_ids("vid_2dc8&pid_31", &vendor, &product));
+    CHECK(!hid_path_ids("vid_2dc8&pid_", &vendor, &product));
+    // A first "vid_" that is not followed by a pad id must not hide a later one that is.
+    CHECK(ids_of("x#vid_zzzz#vid_057e&pid_2009#", 0x057E, 0x2009));
+}
+
+static const char* style_for(std::initializer_list<unsigned> vendors) {
+    PadVendors set = {};
+    for (unsigned vendor : vendors) pad_vendors_add(&set, vendor);
+    return pad_style_for(set);
+}
+
+static void test_the_icon_set_follows_the_makers_that_are_present() {
+    CHECK(!strcmp(style_for({}), "xbox"));
+    CHECK(!strcmp(style_for({0x045E}), "xbox"));
+    CHECK(!strcmp(style_for({0x054C}), "playstation"));
+    CHECK(!strcmp(style_for({0x057E}), "switch"));
+    CHECK(!strcmp(style_for({0x2DC8}), "generic"));
+    // With several pads plugged in, the order is PlayStation, Switch, other makers, Xbox.
+    CHECK(!strcmp(style_for({0x045E, 0x054C}), "playstation"));
+    CHECK(!strcmp(style_for({0x057E, 0x054C}), "playstation"));
+    CHECK(!strcmp(style_for({0x2DC8, 0x057E}), "switch"));
+    CHECK(!strcmp(style_for({0x045E, 0x2DC8}), "generic"));
+}
+
+static void test_steam_inputs_virtual_pad_does_not_decide_the_icon_set() {
+    const unsigned valve = 0x28DE;
+    CHECK(!strcmp(style_for({valve}), "xbox"));
+    CHECK(!strcmp(style_for({valve, 0x054C}), "playstation"));
+    CHECK(!strcmp(style_for({valve, 0x2DC8}), "generic"));
+}
+
 int main() {
     char templ[] = "/tmp/poppad-native-XXXXXX";
     if (!mkdtemp(templ)) {
@@ -423,6 +473,9 @@ int main() {
     test_an_archive_without_the_name_file_is_left_alone();
     test_a_font_file_is_served_with_the_icons_added();
     test_a_file_that_is_not_a_font_is_not_served();
+    test_device_paths_give_their_vendor_and_product();
+    test_the_icon_set_follows_the_makers_that_are_present();
+    test_steam_inputs_virtual_pad_does_not_decide_the_icon_set();
 
     std::string cleanup = "rm -rf '" + std::string(templ) + "'";
     if (system(cleanup.c_str()) != 0) fprintf(stderr, "could not remove %s\n", templ);
