@@ -1,6 +1,8 @@
 build/
 shots/
 tools/dev/local.env
+CLAUDE.local.md
+.claude/settings.local.json
 *.job
 backups/
 assets/vendor/
